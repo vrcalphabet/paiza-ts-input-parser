@@ -1,0 +1,202 @@
+# paiza-ts
+
+[![npm version](https://badge.fury.io/js/@vrcalphabet%2Fpaiza-ts-input-parser.svg)](https://badge.fury.io/js/@vrcalphabet%2Fpaiza-ts-input-parser)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+paiza-tsで入力データを型安全に取り出すためのライブラリ
+
+## 使い方
+
+1. [paiza-tsをセットアップした](https://github.com/vrcalphabet/paiza-ts#%E4%BD%BF%E3%81%84%E6%96%B9)ディレクトリで、以下のコマンドを実行します。
+
+```
+npm i @vrcalphabet/paiza-ts-input-parser
+```
+
+1. `main.ts` などでスキーマを定義（後述）した `InputParser.parse` を実行します。
+
+```ts
+import { InputParser } from '@vrcalphabet/paiza-ts-input-parser'
+
+const input = InputParser.parse(`
+  +n
+  arr[]
+  point[x, y]
+`)
+
+// 入力例
+// 5
+// apple banana
+// 10 -5
+
+// 結果
+// {
+//   n: 5,
+//   arr: ["apple", "banana"],
+//   point: ["10", "-5"]
+// }
+```
+
+## スキーマ構文
+
+- `name`: 1つの文字列を読む
+- `+name`: 1つの数値を読む
+- `a, b, +c`: 同じ行の複数カラムを読む（スペース区切り）
+- `arr[]`: 1行を配列として読む
+- `+arr[]`: 1行を配列として読む
+- `arr[][]`: その行以降の全行を配列として読む
+- `+arr[][]`: その行以降の全行を配列として読む
+- `...s`: 1行を1文字ずつ分解して読む
+- `...+n`: 1行を1文字ずつ数値変換して読む
+- `...arr[]`: その行以降の全行を1文字ずつ分解して読む
+- `...+arr[]`: その行以降の全行を1文字ずつ数値変換して読む
+- `obj[a, +b]`: 1行からオブジェクトを作る（グルーピング）
+- `obj[a, +b][]`: その行以降の全行からオブジェクト配列を作る
+- `_name`, `+_name`: 値を無視する（読み取りはするが結果に含めない）
+- `# コメント`: 行コメント
+
+### 例1: 単一値と複数列
+
+入力:
+
+```
+3
+alice 20 math
+```
+
+スキーマ:
+
+```python
++n
+name, +age, _subject # これはコメントです。先頭に _ が付いている変数は出力されません。
+```
+
+結果:
+
+```ts
+{
+  n: 3,
+  name: 'alice',
+  age: 20,
+}
+```
+
+### 例2: 配列と複数行配列
+
+入力:
+
+```
+red blue green
+11 22 33 44
+1 2
+3 4
+```
+
+スキーマ:
+
+```python
+colors[]
++numbers[]
++grid[][]
+```
+
+結果:
+
+```ts
+{
+  colors: ['red', 'blue', 'green'],
+  numbers: [11, 22, 33, 44],
+  grid: [
+    [1, 2],
+    [3, 4],
+  ],
+}
+```
+
+### 例3: スプレット構文
+
+入力:
+
+```
+GREEN
+12345
+67890
+```
+
+スキーマ:
+
+```python
+...green
+...+map[]
+```
+
+結果:
+
+```ts
+{
+  green: ["G", "R", "E", "E", "N"],
+  map: [
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 0],
+  ],
+}
+```
+
+### 例4: オブジェクト形式と無視変数
+
+入力:
+
+```
+3
+200 300
+id-1 taro 90
+id-2 hanako 85
+```
+
+スキーマ:
+
+```python
++n
+prices[+apple, banana]
+rows[_id, name, +score][]
+```
+
+結果:
+
+```ts
+{
+  n: 3,
+  prices: {
+    apple: 200,
+    banana: "300",
+  },
+  rows: [
+    { name: 'taro', score: 90 },
+    { name: 'hanako', score: 85 },
+  ],
+}
+```
+
+## 注意点
+
+- `arr[][]` / `...arr[]` / `obj[... ][]` のような複数行を読む構文は、その行から末尾までをすべて消費します。これより下の行にスキーマがあっても無視されます。
+- 行数や列数が不足している場合は、実行時に `Error` が投げられます。
+- <u>スキーマ自体の構文ミスは、TypeScript の型エラーとして検出されます。</u>(！)
+
+## 貢献
+
+プロジェクトへの貢献を歓迎します！以下のルールに従うと，あなたの貢献がスムーズになります！
+
+### Issue / PR
+
+Issueを立てる際は，バグ報告・機能要望のどちらかを明記してください。
+PRの説明には，目的・変更点・影響範囲・サンプルコードがあるとありがたいです。
+
+**※スクリーンショットを添付する際は、チャレンジ問題の問題文が画像に含まれていないことを確認してください。**
+
+## ライセンス
+
+MIT License
+
+詳細は[LICENSE](./LICENSE)ファイルを参照してください。

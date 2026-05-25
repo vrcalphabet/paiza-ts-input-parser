@@ -1,0 +1,42 @@
+{
+  "name": "@vrcalphabet/paiza-ts-input-parser",
+  "version": "1.0.0",
+  "description": "paiza-tsで入力データを型安全に取り出すためのライブラリ",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/main.mjs",
+  "types": "dist/main.d.mts",
+  "scripts": {
+    "format": "npx prettier --write src",
+    "build": "npx tsdown"
+  },
+  "keywords": [],
+  "homepage": "https://github.com/vrcalphabet/paiza-ts-input-parser",
+  "bugs": {
+    "url": "https://github.com/vrcalphabet/paiza-ts-input-parser/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vrcalphabet/paiza-ts-input-parser.git"
+  },
+  "author": "vrcalphabet",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/node": "^25.9.1",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "tsdown": "^0.22.0",
+    "typescript-eslint": "^8.59.4"
+  },
+  "dependencies": {
+    "arkregex": "^0.0.5"
+  }
+}
