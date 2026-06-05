@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: { 'main': 'src/main.ts' },
+  entry: { main: 'src/main.ts' },
   minify: true,
   format: 'esm',
   outDir: 'dist',
