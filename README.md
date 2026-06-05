@@ -56,10 +56,11 @@ const input = parseInput(`
 - ```
   +C
   arr[][C]
-  arr[0][C]
-  ...arr[C]
-  obj[a, b][C]
+  # arr[0][C]
+  # ...arr[C]
+  # obj[a, b][C]
   ```
+
   直前に読み取った数値分の行数を読む
 
 - `...s`: 1行を1文字ずつ分割して文字列配列として読む
@@ -84,7 +85,7 @@ alice 20 math
 
 スキーマ:
 
-```python
+```ts
 +n
 name, +age, _subject # これはコメントです。先頭に _ が付いている変数は出力されません。
 ```
@@ -94,7 +95,7 @@ name, +age, _subject # これはコメントです。先頭に _ が付いてい
 ```ts
 {
   n: 3,
-  name: 'alice',
+  name: "alice",
   age: 20,
 }
 ```
@@ -112,7 +113,7 @@ red blue green
 
 スキーマ:
 
-```python
+```ts
 colors[]
 +numbers[]
 +grid[][]
@@ -122,7 +123,7 @@ colors[]
 
 ```ts
 {
-  colors: ['red', 'blue', 'green'],
+  colors: ["red", "blue", "green"],
   numbers: [11, 22, 33, 44],
   grid: [
     [1, 2],
@@ -143,7 +144,7 @@ GREEN
 
 スキーマ:
 
-```python
+```ts
 ...color
 ...+map[]
 ```
@@ -173,7 +174,7 @@ id-2 hanako 85
 
 スキーマ:
 
-```python
+```ts
 +n
 prices[+apple, banana]
 rows[_id, name, +score][]
@@ -189,15 +190,51 @@ rows[_id, name, +score][]
     banana: "300",
   },
   rows: [
-    { name: 'taro', score: 90 },
-    { name: 'hanako', score: 85 },
+    { name: "taro", score: 90 },
+    { name: "hanako", score: 85 },
+  ],
+}
+```
+
+### 例5: 行数指定
+
+入力:
+
+```
+3
+10
+20
+30
+2
+taro jiro 2
+jiro taro 1
+```
+
+スキーマ:
+
+```ts
+;+n
+points[0][n] + m
+logs[(from, to, +type)][m]
+```
+
+結果:
+
+```ts
+{
+  n: 3,
+  points: [10, 20, 30],
+  m: 2,
+  logs: [
+    { from: "taro", to: "jiro", type: 2 },
+    { from: "jiro", to: "taro", type: 1 },
   ],
 }
 ```
 
 ## 注意点
 
-- `arr[][]` / `...arr[]` / `obj[... ][]` のような複数行を読む構文は、その行から末尾までをすべて消費します。これより下の行にスキーマがあっても無視されます。
+- `arr[][]` / `...arr[]` / `obj[...][]` のような複数行を読む構文は、その行から末尾までをすべて消費します。これより下の行にスキーマがあっても無視されます。
 - 行数や列数が不足している場合は、実行時に `Error` が投げられます。
 - <u>スキーマ自体の構文ミスは、TypeScript の型エラーとして検出されます。</u>(！)
 
