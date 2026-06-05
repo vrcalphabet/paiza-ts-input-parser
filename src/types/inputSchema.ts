@@ -1,17 +1,6 @@
-// #region Utils
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 
-type Err_InvalidIdentWithNumeric =
-  '無効な識別子です。識別子の先頭に数字は入れられません。'
-type Err_InvalidSyntax = '無効な構文です。'
-type Err_InvalidSyntaxForgetComma = '無効な構文です。カンマを忘れていませんか？'
-type Err_InvalidSyntaxWithExtraComma =
-  '無効な構文です。末尾や途中に余計なカンマが含まれています。'
-type Err_InvalidSyntaxSpread2D<Name extends string> =
-  `無効な構文です。代わりに '...${Name}[]' を使用してください。`
-type Err_InvalidSyntaxCantConvertToNumber<Name extends string> =
-  `無効な構文です。 '${Name}' は数値に変換できません。`
-type Err_HasSyntaxError =
-  '構文エラーがあります。下記のエラー内容をよく確認してください。'
+// #region Utils
 
 type Trim<T extends string> =
   T extends ` ${infer R}` ? Trim<R>
@@ -33,12 +22,24 @@ type IsLiteralString<T> =
   : false
 
 type ExtractLiteral<T> =
-  T extends any[] ? ExtractLiteral<T[number]>
+  T extends unknown[] ? ExtractLiteral<T[number]>
   : IsLiteralString<T> extends true ? T
   : T extends object ? { [K in keyof T]: ExtractLiteral<T[K]> }[keyof T]
   : never
 
 type CheckIgnoreVar<Name extends string, T> = Name extends `_${string}` ? {} : T
+
+// #endregion
+// #region Errors
+
+type Err_InvalidIdentWithNumeric =
+  '無効な識別子です。識別子の先頭に数字は入れられません。'
+type Err_InvalidSyntax = '無効な構文です。'
+type Err_InvalidSyntaxForgetComma = '無効な構文です。カンマを忘れていませんか？'
+type Err_InvalidSyntaxWithExtraComma =
+  '無効な構文です。末尾や途中に余計なカンマが含まれています。'
+type Err_HasSyntaxError =
+  '構文エラーがあります。下記のエラー内容をよく確認してください。'
 
 // #endregion
 // #region Identifier
@@ -66,18 +67,19 @@ type IsIdentBody<T extends string> =
     : false
   : true
 
-type IfIdent<T extends string, Then> =
-  T extends `${infer Head}${infer Tail}` ?
+type IfIdent<T extends string, Raw extends string, Then> =
+  T extends `${string} ${string}` ? O<Raw, Err_InvalidSyntaxForgetComma>
+  : T extends `${infer Head}${infer Tail}` ?
     Head extends AlphaChar ?
-      IsIdentBody<Tail> extends true ? Then
-      : T extends `${string} ${string}` ? Err_InvalidSyntaxForgetComma
-      : Err_InvalidSyntax
-    : Head extends NumericChar ? Err_InvalidIdentWithNumeric
-    : Err_InvalidSyntax
-  : Err_InvalidSyntaxWithExtraComma
+      IsIdentBody<Tail> extends true ?
+        Then
+      : O<Raw, Err_InvalidSyntax>
+    : Head extends NumericChar ? O<Raw, Err_InvalidIdentWithNumeric>
+    : O<Raw, Err_InvalidSyntax>
+  : O<Raw, Err_InvalidSyntaxWithExtraComma>
 
 // #endregion
-// #region DSL
+// #region Schema
 
 type CheckHasError<T> =
   [ExtractLiteral<T>] extends [never] ? T
@@ -97,31 +99,63 @@ type ParseLines<T extends string[]> =
       ParseLines<Rest>
   : {}
 
-type ParseLine<T extends string> =
-  T extends `...${infer L}[][]` ? O<T, Err_InvalidSyntaxSpread2D<L>>
-  : T extends `${infer Name}[][]` ? ParseField<Name, number[][], string[][]>
-  : T extends `...${infer Name}[]` ? ParseField<Name, number[][], string[][]>
-  : T extends `${infer Name}[${infer Args}][]` ?
-    Name extends `+${infer Name}` ?
-      O<`+${Name}[${Args}][]`, Err_InvalidSyntaxCantConvertToNumber<Name>>
-    : O<Name, Prettify<ParseScalar<Args>>[]>
-  : T extends `${infer Name}[${infer Args}]` ?
-    Args extends '' ? ParseField<Name, number[], string[]>
-    : Name extends `+${infer Name}` ?
-      O<`+${Name}[${Args}][]`, Err_InvalidSyntaxCantConvertToNumber<Name>>
-    : O<Name, Prettify<ParseScalar<Args>>>
-  : T extends `...${infer Name}` ? ParseField<Name, number[], string[]>
-  : ParseScalar<T>
+type ParseArrayFieldSchema<
+  Name extends string,
+  Index extends number | '',
+  TwoD extends boolean,
+> =
+  Index extends '' ? ParseField<Name, TwoD, number[], string[]>
+  : ParseField<Name, TwoD, number, string>
+
+type ParseSpreadField<Name extends string, TwoD extends boolean> = ParseField<
+  Name,
+  TwoD,
+  number[],
+  string[]
+>
+
+type ParseBracketArrayField<
+  Name extends string,
+  Args extends string,
+  TwoD extends boolean,
+> = O<Name, TwoDimension<Prettify<ParseScalar<Args>>, TwoD>>
+
+type TwoDimension<T, TwoD extends boolean> = TwoD extends false ? T : T[]
+
+type ParseField<
+  T extends string,
+  TwoD extends boolean = false,
+  Num = number,
+  Str = string,
+> =
+  T extends `${string},` ? O<T, Err_InvalidSyntaxWithExtraComma>
+  : T extends '' ? O<',', Err_InvalidSyntaxWithExtraComma>
+  : T extends `+${infer Name}` ?
+    CheckIgnoreVar<Name, IfIdent<Name, Name, O<Name, TwoDimension<Num, TwoD>>>>
+  : CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Str, TwoD>>>>
 
 type ParseScalar<T extends string> =
   T extends `${infer L},${infer Rest}` ? ParseField<Trim<L>> & ParseScalar<Rest>
   : ParseField<Trim<T>>
 
-type ParseField<T extends string, Num = number, Str = string> =
-  T extends `${string},` ? O<T, Err_InvalidSyntaxWithExtraComma>
-  : T extends '' ? O<',', Err_InvalidSyntaxWithExtraComma>
-  : T extends `+${infer Name}` ? CheckIgnoreVar<Name, O<Name, IfIdent<Name, Num>>>
-  : CheckIgnoreVar<T, O<T, IfIdent<T, Str>>>
+type CheckLineCount<LineCount extends string, Raw extends string, T> =
+  LineCount extends '' ? T : IfIdent<LineCount, Raw, T>
+
+type ParseLine<T extends string> =
+  T extends `...${infer Name}[${infer LineCount}]` ?
+    CheckLineCount<LineCount, T, ParseSpreadField<Name, true>>
+  : T extends `...${infer Name}` ? ParseSpreadField<Name, false>
+  : T extends (
+    `${infer Name}[${infer Index extends number | ''}][${infer LineCount}]`
+  ) ?
+    CheckLineCount<LineCount, T, ParseArrayFieldSchema<Name, Index, true>>
+  : T extends `${infer Name}[${infer Args}][${infer LineCount}]` ?
+    CheckLineCount<LineCount, T, ParseBracketArrayField<Name, Args, true>>
+  : T extends `${infer Name}[${infer Args}]` ?
+    Args extends '' ?
+      ParseArrayFieldSchema<Name, '', false>
+    : ParseBracketArrayField<Name, Args, false>
+  : ParseScalar<T>
 
 export type InputSchema<T extends string> =
   string extends T ? never : Prettify<CheckHasError<ParseLines<SplitLines<T>>>>
