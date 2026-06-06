@@ -10,4 +10,8 @@ export default defineConfig({
   deps: {
     skipNodeModulesBundle: true,
   },
+  banner: `/*!
+  using paiza-ts-input-parser;
+  https://github.com/vrcalphabet/paiza-ts-input-parser
+*/`,
 })
