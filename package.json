@@ -1,6 +1,6 @@
 {
   "name": "@vrcalphabet/paiza-ts-input-parser",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "paiza-tsで入力データを型安全に取り出すためのライブラリ",
   "publishConfig": {
     "access": "public"
