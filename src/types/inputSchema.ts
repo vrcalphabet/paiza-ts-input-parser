@@ -36,8 +36,8 @@ type Err_InvalidIdentWithNumeric =
   '無効な識別子です。識別子の先頭に数字は入れられません。'
 type Err_InvalidSyntax = '無効な構文です。'
 type Err_InvalidSyntaxForgetComma = '無効な構文です。カンマを忘れていませんか？'
-type Err_InvalidSyntaxWithExtraComma =
-  '無効な構文です。末尾や途中に余計なカンマが含まれています。'
+type Err_InvalidSyntaxWithExtraSymbol =
+  '無効な構文です。末尾や途中に余計な記号が含まれています。'
 type Err_HasSyntaxError =
   '構文エラーがあります。下記のエラー内容をよく確認してください。'
 
@@ -76,7 +76,7 @@ type IfIdent<T extends string, Raw extends string, Then> =
       : O<Raw, Err_InvalidSyntax>
     : Head extends NumericChar ? O<Raw, Err_InvalidIdentWithNumeric>
     : O<Raw, Err_InvalidSyntax>
-  : O<Raw, Err_InvalidSyntaxWithExtraComma>
+  : O<Raw, Err_InvalidSyntaxWithExtraSymbol>
 
 // #endregion
 // #region Schema
@@ -128,8 +128,8 @@ type ParseField<
   Num = number,
   Str = string,
 > =
-  T extends `${string},` ? O<T, Err_InvalidSyntaxWithExtraComma>
-  : T extends '' ? O<',', Err_InvalidSyntaxWithExtraComma>
+  T extends `${string},` ? O<T, Err_InvalidSyntaxWithExtraSymbol>
+  : T extends '' ? O<',', Err_InvalidSyntaxWithExtraSymbol>
   : T extends `+${infer Name}` ?
     CheckIgnoreVar<Name, IfIdent<Name, Name, O<Name, TwoDimension<Num, TwoD>>>>
   : CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Str, TwoD>>>>
