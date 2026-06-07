@@ -9,6 +9,7 @@
 ## 使い方
 
 1. [paiza-tsをセットアップした](https://github.com/vrcalphabet/paiza-ts#%E4%BD%BF%E3%81%84%E6%96%B9)ディレクトリで、以下のコマンドを実行します。
+※ 最新版の[create-paiza-ts](https://github.com/vrcalphabet/create-paiza-ts)でセットアップした場合、デフォルトでインストールされるのでこの手順は必要ありません。
 
 ```
 npm i @vrcalphabet/paiza-ts-input-parser
