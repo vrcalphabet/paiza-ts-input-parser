@@ -2,7 +2,11 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   entry: { main: 'src/main.ts' },
-  minify: true,
+  minify: {
+    mangle: {
+      toplevel: false,
+    },
+  },
   format: 'esm',
   outDir: 'dist',
   clean: true,
