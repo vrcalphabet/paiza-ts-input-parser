@@ -214,9 +214,10 @@ jiro taro 1
 スキーマ:
 
 ```ts
-;+n
-points[0][n] + m
-logs[(from, to, +type)][m]
++n
+points[0][n]
++m
+logs[from, to, +type][m]
 ```
 
 結果:
