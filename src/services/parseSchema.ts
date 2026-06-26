@@ -4,26 +4,28 @@ import { ParserError } from './ParserError'
 
 // prettier-ignore
 const patterns = {
-  arrayField: regex('^(?<mark>\\+)?(?<name>[\\w$]+)\\[(?<index>\\d+)?\\](?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
-  spreadField: regex('^\\.\\.\\.(?<mark>\\+)?(?<name>[\\w$]+)(?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
+  arrayField: regex('^(?<mark>\\+)?(?<decr>~)?(?<name>[\\w$]+)\\[(?<index>\\d+)?\\](?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
+  spreadField: regex('^\\.\\.\\.(?<mark>\\+)?(?<decr>~)?(?<name>[\\w$]+)(?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
   bracketArrayField: regex('^(?<name>[\\w$]+)\\[(?<fields>[^\\]]+)\\](?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
-  scalarField: regex('^(?<mark>\\+)?(?<name>[\\w$]+)$'),
+  scalarField: regex('^(?<mark>\\+)?(?<decr>~)?(?<name>[\\w$]+)$'),
   scalarFields: regex('^(?<fields>.+)$'),
 }
 
 // prettier-ignore
 const parsers = [
-  create('arrayField', ({ mark, name, index, twoD, lineCount }) => ({
+  create('arrayField', ({ mark, decr, name, index, twoD, lineCount }) => ({
     name,
     toNumber: !!mark,
+    decrement: !!decr,
     is2D: twoD !== undefined,
     index: index !== undefined ? Number(index) : undefined,
     lineCount
   } as const)),
 
-  create('spreadField', ({ mark, name, twoD, lineCount }) => ({
+  create('spreadField', ({ mark, decr, name, twoD, lineCount }) => ({
     name,
     toNumber: !!mark,
+    decrement: !!decr,
     is2D: twoD !== undefined,
     lineCount
   } as const)),
@@ -63,6 +65,7 @@ function parseFields(fields: string) {
     return {
       name: g.name,
       toNumber: !!g.mark,
+      decrement: !!g.decr,
     }
   })
 }

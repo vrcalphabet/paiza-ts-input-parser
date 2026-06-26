@@ -130,8 +130,10 @@ type ParseField<
 > =
   T extends `${string},` ? O<T, Err_InvalidSyntaxWithExtraSymbol>
   : T extends '' ? O<',', Err_InvalidSyntaxWithExtraSymbol>
-  : T extends `+${infer Name}` ?
-    CheckIgnoreVar<Name, IfIdent<Name, Name, O<Name, TwoDimension<Num, TwoD>>>>
+  : T extends `+~${infer T}` ?
+    CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Num, TwoD>>>>
+  : T extends `+${infer T}` ?
+    CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Num, TwoD>>>>
   : CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Str, TwoD>>>>
 
 type ParseScalar<T extends string> =

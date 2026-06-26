@@ -4,18 +4,16 @@ type BaseSchema<T extends string> = {
   is2D: boolean
 }
 
-type ArrayFieldSchema = BaseSchema<'arrayField'> & {
-  name: string
-  toNumber: boolean
-  index: number | undefined
-  lineCount: string | undefined
-}
+type ArrayFieldSchema = BaseSchema<'arrayField'> &
+  Field & {
+    index: number | undefined
+    lineCount: string | undefined
+  }
 
-type SpreadFieldSchema = BaseSchema<'spreadField'> & {
-  name: string
-  toNumber: boolean
-  lineCount: string | undefined
-}
+type SpreadFieldSchema = BaseSchema<'spreadField'> &
+  Field & {
+    lineCount: string | undefined
+  }
 
 type BracketArrayFieldSchema = BaseSchema<'bracketArrayField'> & {
   name: string
@@ -31,6 +29,7 @@ type ScalarFieldsSchema = BaseSchema<'scalarFields'> & {
 export type Field = {
   name: string
   toNumber: boolean
+  decrement: boolean
 }
 
 export type Schema =

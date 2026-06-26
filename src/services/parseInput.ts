@@ -33,21 +33,24 @@ function parseFieldSchema(schema: Schema, stdin: string[], lineIndex: number) {
 
   switch (schema.type) {
     case 'arrayField': {
-      const tokens = processTokens(schema.toNumber, stdinLine.split(' '))
+      const tokens = processTokens(schema, stdinLine.split(' '))
       if (schema.index !== undefined) return tokens[schema.index]
       return tokens
     }
     case 'spreadField':
-      return processTokens(schema.toNumber, [...stdinLine])
+      return processTokens(schema, [...stdinLine])
     case 'bracketArrayField':
     case 'scalarFields':
       return parseScalarFields(schema.fields, stdinLine, lineIndex)
   }
 }
 
-function processTokens(toNumber: boolean, values: string[]) {
+function processTokens(
+  { toNumber, decrement }: { toNumber: boolean; decrement: boolean },
+  values: string[],
+) {
   if (!toNumber) return values
-  return values.map(Number)
+  return values.map((v) => Number(v) - (decrement ? 1 : 0))
 }
 
 function parseScalarFields(fields: Field[], stdinLine: string, lineIndex: number) {
@@ -62,7 +65,7 @@ function parseScalarFields(fields: Field[], stdinLine: string, lineIndex: number
       )
     }
 
-    result[field.name] = field.toNumber ? Number(token) : token
+    result[field.name] = processTokens(field, [token])[0]!
   }
 
   return result
