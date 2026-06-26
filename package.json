@@ -12,6 +12,7 @@
   "types": "dist/main.d.mts",
   "scripts": {
     "format": "npx prettier --write src",
+    "dev": "npx tsdown --watch",
     "build": "npx tsdown"
   },
   "keywords": [],
