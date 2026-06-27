@@ -15,7 +15,7 @@
 npm i @vrcalphabet/paiza-ts-input-parser
 ```
 
-1. `main.ts` などでスキーマを定義（後述）した `InputParser.parse` を実行します。
+1. `main.ts` などでスキーマを定義（後述）した `parseInput` を実行します。
 
 ```ts
 import { parseInput } from '@vrcalphabet/paiza-ts-input-parser'
