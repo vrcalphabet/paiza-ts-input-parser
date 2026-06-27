@@ -141,7 +141,9 @@ type ParseScalar<T extends string> =
   : ParseField<Trim<T>>
 
 type CheckLineCount<LineCount extends string, Raw extends string, T> =
-  LineCount extends '' ? T : IfIdent<LineCount, Raw, T>
+  LineCount extends '' ? T
+  : LineCount extends `${number}` ? T
+  : IfIdent<LineCount, Raw, T>
 
 type ParseLine<T extends string> =
   T extends `...${infer Name}[${infer LineCount}]` ?

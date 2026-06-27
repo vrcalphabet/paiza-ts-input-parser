@@ -9,15 +9,9 @@ function parseLine(
   result: Record<string, unknown>,
 ) {
   if (schema.is2D) {
-    const lineCount = schema.lineCount
-    if (lineCount !== undefined && !(lineCount in result)) {
-      throw ParserError(
-        `${lineIndex + 1}行目 '${schema.lineCount}' を参照しようとしましたが、該当する変数は割り当てられていませんでした。`,
-      )
-    }
-
-    const endIndex =
-      lineCount !== undefined ? lineIndex + Number(result[lineCount]) : undefined
+    const lineCount = getConsumedLines(schema, lineIndex, result)
+    const endIndex = lineCount !== undefined ? lineIndex + lineCount : undefined
+    
     const parsedLines = stdin
       .slice(lineIndex, endIndex)
       .map((_, i) => parseFieldSchema(schema, stdin, lineIndex + i))
@@ -71,10 +65,21 @@ function parseScalarFields(fields: Field[], stdinLine: string, lineIndex: number
   return result
 }
 
-function getConsumedLines(schema: Schema, result: Record<string, unknown>) {
+function getConsumedLines(
+  schema: Schema,
+  lineIndex: number,
+  result: Record<string, unknown>,
+) {
   if (schema.is2D) {
-    const lineCount = schema.lineCount
-    return lineCount !== undefined ? Number(result[lineCount]) : undefined
+    return ((lineCount) => {
+      if (lineCount === undefined) return undefined
+      if (/^\d+$/.test(lineCount)) return Number(lineCount)
+      if (lineCount in result) return Number(result[lineCount])
+
+      throw ParserError(
+        `${lineIndex + 1}行目 '${lineCount}' を参照しようとしましたが、該当する変数は割り当てられていませんでした。`,
+      )
+    })(schema.lineCount)
   }
 
   return 1
@@ -94,7 +99,7 @@ export function parseLines(schemas: Schema[]) {
 
     Object.assign(result, parseLine(schema, stdin, lineIndex, result))
 
-    const lineCount = getConsumedLines(schema, result)
+    const lineCount = getConsumedLines(schema, lineIndex, result)
     if (lineCount === undefined) break
     lineIndex += lineCount
   }
