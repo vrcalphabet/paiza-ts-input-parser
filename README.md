@@ -44,6 +44,13 @@ const input = parseInput(`
 - `name`: 次の文字列を読む
 - `+name`: 次の数値を読む
 - `a, b, +c`: 同じ行の複数カラムを読む
+- `name={...}`: 文字列リテラルのユニオンを指定する（パイプ(`|`)区切り）
+
+- ```
+  name          # name: string
+  +n            # n: number
+  dir={N|E|S|W} # dir: "N" | "E" | "S" | "W"
+  ```
 
 - `arr[]`: 1行を文字列配列として読む
 - `+arr[]`: 1行を数値配列として読む
