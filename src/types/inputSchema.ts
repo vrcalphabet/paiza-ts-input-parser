@@ -14,30 +14,20 @@ type O<Name extends string, T> = { [K in Name]: T }
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
-type IsLiteralString<T> =
-  T extends string ?
-    string extends T ?
-      false
-    : true
-  : false
-
-type ExtractLiteral<T> =
-  T extends unknown[] ? ExtractLiteral<T[number]>
-  : IsLiteralString<T> extends true ? T
-  : T extends object ? { [K in keyof T]: ExtractLiteral<T[K]> }[keyof T]
-  : never
-
 type CheckIgnoreVar<Name extends string, T> = Name extends `_${string}` ? {} : T
 
 // #endregion
 // #region Errors
 
+type Error<T extends string> = Prettify<O<'__ERROR__', T>>
+
 type Err_InvalidIdentWithNumeric =
-  '無効な識別子です。識別子の先頭に数字は入れられません。'
-type Err_InvalidSyntax = '無効な構文です。'
-type Err_InvalidSyntaxForgetComma = '無効な構文です。カンマを忘れていませんか？'
+  Error<'無効な識別子です。識別子の先頭に数字は入れられません。'>
+type Err_InvalidSyntax = Error<'無効な構文です。'>
+type Err_InvalidSyntaxForgetComma =
+  Error<'無効な構文です。カンマを忘れていませんか？'>
 type Err_InvalidSyntaxWithExtraSymbol =
-  '無効な構文です。末尾や途中に余計な記号が含まれています。'
+  Error<'無効な構文です。末尾や途中に余計な記号が含まれています。'>
 type Err_HasSyntaxError =
   '構文エラーがあります。下記のエラー内容をよく確認してください。'
 
@@ -81,8 +71,14 @@ type IfIdent<T extends string, Raw extends string, Then> =
 // #endregion
 // #region Schema
 
+type HasError<T> =
+  T extends unknown[] ? HasError<T[number]>
+  : T extends object ?
+    { [K in keyof T]: K extends '__ERROR__' ? true : HasError<T[K]> }[keyof T]
+  : false
+
 type CheckHasError<T> =
-  [ExtractLiteral<T>] extends [never] ? T
+  HasError<T> extends false ? T
   : {
       __ERROR__: {
         reason: Err_HasSyntaxError
@@ -130,15 +126,26 @@ type ParseField<
 > =
   T extends `${string},` ? O<T, Err_InvalidSyntaxWithExtraSymbol>
   : T extends '' ? O<',', Err_InvalidSyntaxWithExtraSymbol>
-  : T extends `+~${infer T}` ?
-    CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Num, TwoD>>>>
-  : T extends `+${infer T}` ?
-    CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Num, TwoD>>>>
-  : CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<Str, TwoD>>>>
+  : T extends `+~${infer Name}` ?
+    CheckIgnoreVar<Name, IfIdent<Name, T, O<Name, TwoDimension<Num, TwoD>>>>
+  : T extends `+${infer Name}` ?
+    CheckIgnoreVar<Name, IfIdent<Name, T, O<Name, TwoDimension<Num, TwoD>>>>
+  : ParseIdent<T, Str, TwoD>
+
+type ParseIdent<T extends string, V, TwoD extends boolean> =
+  T extends `${infer Name}={${infer Union}}` ?
+    CheckIgnoreVar<
+      Name,
+      IfIdent<Name, T, O<Name, TwoDimension<keyof ParseUnion<Union>, TwoD>>>
+    >
+  : CheckIgnoreVar<T, IfIdent<T, T, O<T, TwoDimension<V, TwoD>>>>
 
 type ParseScalar<T extends string> =
   T extends `${infer L},${infer Rest}` ? ParseField<Trim<L>> & ParseScalar<Rest>
   : ParseField<Trim<T>>
+
+type ParseUnion<T extends string> =
+  T extends `${infer L}|${infer Rest}` ? O<L, never> & ParseUnion<Rest> : O<T, never>
 
 type CheckLineCount<LineCount extends string, Raw extends string, T> =
   LineCount extends '' ? T

@@ -2,13 +2,19 @@ import { regex } from 'arkregex'
 import type { Schema } from '../types/internal/schema'
 import { ParserError } from './ParserError'
 
-// prettier-ignore
+const p = {
+  mark: '(?<mark>\\+)?(?<decr>~)?',
+  name: '(?<name>[\\w$]+)(?:={[^}]*})?',
+  fields: '(?<fields>[^\\]]+)',
+  twoD: '(?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?',
+} as const
+
 const patterns = {
-  arrayField: regex('^(?<mark>\\+)?(?<decr>~)?(?<name>[\\w$]+)\\[(?<index>\\d+)?\\](?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
-  spreadField: regex('^\\.\\.\\.(?<mark>\\+)?(?<decr>~)?(?<name>[\\w$]+)(?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
-  bracketArrayField: regex('^(?<name>[\\w$]+)\\[(?<fields>[^\\]]+)\\](?<twoD>\\[(?<lineCount>[\\w$]+)?\\])?$'),
-  scalarField: regex('^(?<mark>\\+)?(?<decr>~)?(?<name>[\\w$]+)$'),
-  scalarFields: regex('^(?<fields>.+)$'),
+  arrayField: regex(`^${p.mark}${p.name}\\[(?<index>\\d+)?\\]${p.twoD}$`),
+  spreadField: regex(`^\\.\\.\\.${p.mark}${p.name}${p.twoD}$`),
+  bracketArrayField: regex(`^${p.name}\\[${p.fields}\\]${p.twoD}$`),
+  scalarField: regex(`^${p.mark}${p.name}$`),
+  scalarFields: regex(`^${p.fields}$`),
 }
 
 // prettier-ignore
