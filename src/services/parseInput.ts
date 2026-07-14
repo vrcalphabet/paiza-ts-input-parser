@@ -52,11 +52,16 @@ function parseScalarFields(fields: Field[], stdinLine: string, lineIndex: number
   const result: Record<string, string | number> = {}
 
   for (const [fieldIndex, field] of fields.entries()) {
-    const token = tokens[fieldIndex]
+    let token = tokens[fieldIndex]
     if (token === undefined) {
       throw ParserError(
         `${lineIndex + 1}行${fieldIndex + 1}列目 '${field.name}' を期待しましたが、対応する列がありませんでした。`,
       )
+    }
+
+    if (fieldIndex === fields.length - 1 && fields.length < tokens.length) {
+      // 最後のフィールドにもかかわらず、入力トークンがまだ続いている場合は、それらを合成する
+      token = tokens.slice(fieldIndex).join(" ")
     }
 
     result[field.name] = processTokens(field, [token])[0]!
