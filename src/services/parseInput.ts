@@ -97,9 +97,14 @@ export function parseLines(schemas: Schema[]) {
   let lineIndex = 0
   for (const schema of schemas) {
     if (lineIndex >= stdin.length) {
-      throw ParserError(
-        `${lineIndex + 1}行目 '${schema.raw}' を期待しましたが、対応する行がありませんでした。`,
-      )
+      if (!schema.is2D) {
+        throw ParserError(
+          `${lineIndex + 1}行目 '${schema.raw}' を期待しましたが、対応する行がありませんでした。`,
+        )
+      }
+
+      Object.assign(result, { [schema.name]: [] })
+      continue
     }
 
     Object.assign(result, parseLine(schema, stdin, lineIndex, result))
