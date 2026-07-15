@@ -11,7 +11,7 @@ function parseLine(
   if (schema.is2D) {
     const lineCount = getConsumedLines(schema, lineIndex, result)
     const endIndex = lineCount !== undefined ? lineIndex + lineCount : undefined
-    
+
     const parsedLines = stdin
       .slice(lineIndex, endIndex)
       .map((_, i) => parseFieldSchema(schema, stdin, lineIndex + i))
@@ -61,7 +61,7 @@ function parseScalarFields(fields: Field[], stdinLine: string, lineIndex: number
 
     if (fieldIndex === fields.length - 1 && fields.length < tokens.length) {
       // 最後のフィールドにもかかわらず、入力トークンがまだ続いている場合は、それらを合成する
-      token = tokens.slice(fieldIndex).join(" ")
+      token = tokens.slice(fieldIndex).join(' ')
     }
 
     result[field.name] = processTokens(field, [token])[0]!
